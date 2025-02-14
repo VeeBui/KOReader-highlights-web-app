@@ -14,7 +14,7 @@ This repo contains the following Apps Scrips, saved in the Scripts subfolder:
 * I have set it up so that it can read in multiple files, but I haven't done anything besides accessing the first file.
 * If you want more styles than just underline and lighten, you will need to add them yourself.
 * You may need to change the colours to match what you have. If you would like to associate each colour with a different purpose, you can change that too
-  * ![Help on customising colours in KOReader here](https://www.reddit.com/r/koreader/comments/1ibqhmc/userpatch_to_customize_highlight_colors/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button)
+  * [Help on customising colours in KOReader here](https://www.reddit.com/r/koreader/comments/1ibqhmc/userpatch_to_customize_highlight_colors/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button)
 
 
 ## Result:
