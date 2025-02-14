@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <title>KOReader Highlights by VeeBui</title>
+
+  <style>
+    .topnav {
+      overflow: hidden;
+      background-color: #333;
+      color: white;
+      padding: 0 20px;
+      text-align: center;
+    }
+    .selections{
+      padding: 10px 10%;
+    }
+    #output {
+      padding: 0px 10%;
+    }
+  </style>
+</head>
+
+<body onload="addList()">
+  <div class="topnav">
+    <h1>KOreader Highlights</h1>
+  </div>
+  <br>
+  <form id="Form" onsubmit="return false;"> <!-- Added onsubmit to prevent form submission -->
+    <div class="selections">
+    
+      <label for="List">Book title:</label>
+      <input id="dropdownInput" list="dropdownList" name="list" placeholder="Choose Value" required>
+      <datalist id="dropdownList">
+      </datalist>
+    </div>
+     
+    <div class="selections">
+      <label for="List">Highlight style:</label>
+      <input id="styleInput" list="styleDD" placeholder="Choose Value" required>
+      <datalist id="styleDD">
+      	<option value="Lighten"></option>
+      	<option value="Underline"></option>
+      </datalist>
+    </div>
+     
+    <div class="selections">
+      <label for="List">Sort by:</label>
+      <input id="sortByInput" list="sortByDD" placeholder="Page Number" required>
+      <datalist id="sortByDD">
+      	<option value="Page Number"></option>
+      	<option value="Colour"></option>
+      </datalist>
+    </div>
+    
+    <div class="selections">  
+      <button id="submit">Submit</button><br>
+    </div>
+    
+    <hr>
+    
+    <div id="output"></div>
+  </form>
+
+
+  <script>
+    function addList() {
+      google.script.run
+        .withFailureHandler(onFailure)
+        .withSuccessHandler(addListValues)
+        .popDropDown();
+    }
+
+    function addListValues(values) {
+      var list = document.getElementById('dropdownList');
+      for (var i = 0; i < values.length; i++) {
+        var option = document.createElement("option");
+        option.value = values[i];
+        list.appendChild(option);
+      }
+    }
+
+    document.getElementById('submit').addEventListener('click', function(e) {
+      e.preventDefault(); // Prevent default button behavior
+      var obj = document.getElementById('output');
+      obj.innerHTML = '<p>Processing. Please wait...</p>';
+      
+      // Get the selected value from the input
+      var selectedValue = document.getElementById('dropdownInput').value;
+      var selectedStyle = document.getElementById('styleInput').value;
+      var selectedSortBy = document.getElementById('sortByInput').value;
+      
+      google.script.run
+        .withFailureHandler(onFailure)
+        .withSuccessHandler(function(value) {
+          var obj = document.getElementById("output");
+          obj.innerHTML = value; // Changed to innerHTML since the return value contains HTML
+        })
+        .fillWithHighlights(selectedValue, selectedStyle, selectedSortBy);
+    });
+
+    function onFailure(err) {
+      alert('There was an error!' + err.message);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,185 @@
+// Created by: VeeBui
+// Modified: 14 February 2025
+// For free use and distribution, but please credit me for creation
+
+function doGet() {
+  return HtmlService
+    .createHtmlOutputFromFile('index.html')
+    .setTitle("KOReader Highlights by VeeBui");
+}
+
+function fileContents(){
+  // set up
+  var folder = DriveApp.getFolderById('<your folder ID here>');
+  var list = [];
+  list.push(['Name','JSON']);
+
+  // get files
+  var files = folder.getFiles();
+  while (files.hasNext()){
+    file = files.next();
+
+    // create row
+    var row = [];
+    row.push(file.getName());
+    var content = file.getBlob().getDataAsString();
+    row.push(JSON.parse(content))
+
+    list.push(row);
+
+  }
+  
+  //console.log(list);
+  return list;
+}
+
+
+function popDropDown() {
+  var documents = fileContents()[1][1].documents;
+
+  // get titles for drop down
+  var allTitles = documents.map(function(value) {
+    return value["title"];
+  });
+
+  // get authors
+  var allAuthors = documents.map(function(value) {
+    return value["author"];
+  });
+  allAuthors = allAuthors.map(function(value) {
+    return value.split(/,/)[0];
+  })
+  var acronym = allAuthors.map(function(value) {
+    return value.split(/\s/).reduce((response,word)=> response+=word.slice(0,3),'');
+  })
+  
+  // join title and author acronym
+  var dropDownItems = allTitles.map((x, i) => x + " - " + acronym[i]); 
+
+  return dropDownItems.sort();
+
+}
+
+// change this to fit your own preferences
+var colorDict = {
+  "red": [60, "Saucy", "#eb828b"],
+  "orange": [55, "Weird", "#e3a762"],
+  "yellow": [50, "Interesting", "#eae08c"],
+  "olive": [45, "Ick", "#a7d496"],
+  "green": [40, "Hate", "#6fb288"],
+  "turquoise": [35, "Funny", "#82d5c2"],
+  "cyan": [30, "Artistic", "#b6d6f4"],
+  "blue": [25, "Deep", "#7a9ed2"],
+  "indigo": [20, "Special", "#7d77cb"],
+  "purple": [15, "General", "#b495e3"],
+  "pink": [10, "Love", "#e7b1ea"],
+  "gray": [5, "Gray", "#d4d4d4"]
+}
+
+// return HTML for list of highlights
+function fillWithHighlights(bookTitle, hLStyle, srtBy) {
+  // get all highlights from book that match the desired crit
+  var highlights = getHighlights(bookTitle, hLStyle, srtBy);
+  var outstring = ""
+
+  // start building 
+  highlights.forEach(entry=> { 
+    // create date string
+    var d = new Date(0);
+    d.setUTCSeconds(entry["time"]);
+    var hlTime = Utilities.formatDate(d, "Australia/Melbourne", "dd MMM yyyy");
+
+    // Chapter: xxx, Page: xxx, Time: xxx, Type: xxx
+    outstring += `<p><b>Chapter</b>: ${entry["chapter"]}, <b>Page</b>: ${entry["page"]}, <b>Time</b>: ${hlTime}, <b>Type</b>: <span style="color:${colorDict[entry["color"]][2]}">${colorDict[entry["color"]][1]}</span></p>`;
+    outstring += `<p style="background-color:${colorDict[entry["color"]][2]}; padding: 1px 5px">${entry["text"]}</p><hr>`;
+  });
+
+  return outstring;
+}
+
+function getHighlights(bookTitle, hLStyle, srtBy) {
+  // split book title into title and author acronym
+  var strings = bookTitle.split(" - ");
+  bookTitle = strings[0];
+  var authAcr = strings[1];
+
+  // documents
+  var documents = fileContents()[1][1].documents;
+
+  // get books that match the title
+  var titleBooks = documents.filter(obj => {
+    return obj["title"] === bookTitle;
+  })
+
+  // make sure the author matches too
+  var authorBooks = titleBooks.filter(obj => {
+    return obj["author"].split(/\s/).reduce((response,word)=> response+=word.slice(0,3),'') === authAcr;
+  })
+
+  // translate hlStyle to "drawer" type
+  var dict = {
+    "Lighten": "lighten",
+    "Underline": "underscore"
+  }
+
+  // return the highlights where the style matches
+  var thisBook = authorBooks[0]["entries"];
+  var highlights = thisBook.filter(obj => {
+    return obj["drawer"] === dict[hLStyle]
+  })
+
+  // sort the highlights
+  if(srtBy === "Colour") {
+    return highlights.sort(function(x, y) {
+              if (colorDict[x["color"]][0] < colorDict[y["color"]][0]) {
+                return 1;
+              }
+              if (colorDict[x["color"]][0] > colorDict[y["color"]][0]) {
+                return -1;
+              }
+              return 0;
+            });
+  } 
+  else {
+    return highlights;
+  }
+
+}
+
+
+
+
+function test() {
+  console.log(fillWithHighlights("<title>","<type>","<colour>"));
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
